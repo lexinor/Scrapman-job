@@ -31,15 +31,17 @@ Citizen.CreateThread(function()
     while true do
         local ped = PlayerPedId()
         local plyCoords = GetEntityCoords(ped)
+        local NearMarker = false
         for k in pairs(Scrappos) do
            if InJob == false then
-              DrawMarker(1, Scrappos[k].x, Scrappos[k].y, Scrappos[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 0, 173, 255, 47 ,0 ,0 ,0 ,0)
               local coord1 = vector3(plyCoords.x, plyCoords.y, plyCoords.z)
 	          local coord2 = vector3(Scrappos[k].x, Scrappos[k].y, Scrappos[k].z)
               local dist = #(coord1 - coord2)
 
-              if dist <= 1.2 then
+              if dist <= 1.2 and not NearMarker then
+                 DrawMarker(1, Scrappos[k].x, Scrappos[k].y, Scrappos[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 0, 173, 255, 47 ,0 ,0 ,0 ,0)
                  scrapmantext(Scrappos[k].x, Scrappos[k].y, Scrappos[k].z, tostring('Press ~b~[E]~w~ to search this spot'))
+                 NearMarker = true
                  if IsControlJustPressed(0,38) then
                     scrap()
                     InJob = true
@@ -50,12 +52,13 @@ Citizen.CreateThread(function()
 
         for k in pairs(Scrapsell) do
            if InJob == true then
-              DrawMarker(1, Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 50, 205, 50, 80 ,0 ,0 ,0 ,0)
               local coord1 = vector3(plyCoords.x, plyCoords.y, plyCoords.z)
 	          local coord2 = vector3(Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z)
 	          local dist = #(coord1 - coord2)
-              if dist <= 1.2 then
+              if dist <= 1.2 and not NearMarker then
                  scrapmantext(Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z, tostring('Press ~g~[E]~w~ to sell scraps'))
+                 DrawMarker(1, Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 50, 205, 50, 80 ,0 ,0 ,0 ,0)
+                 NearMarker = true
                  if IsControlJustPressed(0,38) then
                     TriggerServerEvent('scrapjob:scrap:sell')
                     DeleteEntity(scrap_type)
@@ -66,10 +69,37 @@ Citizen.CreateThread(function()
            end
         end
 
-        if IsEntityPlayingAnim(ped, "anim@gangops@facility@servers@bodysearch@", "player_search", 3) then
-           DisableAllControlActions(0, true)
-	    end
+        if not NearMarker then
+            Citizen.Wait(1000)
+        end
         Citizen.Wait(0)
+    end
+end)
+
+
+Citizen.CreateThread(function()
+     while true do
+     local ped = PlayerPedId()
+       if IsEntityPlayingAnim(ped, "anim@gangops@facility@servers@bodysearch@", "player_search", 3) then
+          DisableControlAction(0, 24, true)
+          DisableControlAction(0, 257, true)
+          DisableControlAction(0, 263, true)
+          DisableControlAction(0, 32, true)
+          DisableControlAction(0, 34, true)
+          DisableControlAction(0, 31, true)
+          DisableControlAction(0, 30, true)
+          DisableControlAction(0, 45, true)
+          DisableControlAction(0, 22, true)
+          DisableControlAction(0, 44, true)
+          DisableControlAction(0, 37, true)
+          DisableControlAction(0, 264, true)
+          DisableControlAction(0, 257, true)
+          DisableControlAction(0, 140, true)
+          DisableControlAction(0, 141, true)
+          DisableControlAction(0, 142, true)
+          DisableControlAction(0, 143, true)
+       end
+       Citizen.Wait(0)
     end
 end)
 
@@ -173,49 +203,3 @@ function scrapmantext(x, y, z, text)
         DrawText(_x,_y)
     end
 end
-
---[[ If you want to make some changes from DisableAllControlActions(0, true) to your own decide, Go to line 70 delete and paste what you want. (Took from esx police job)
-
-			DisableControlAction(0, 1, true) -- Disable pan
-			DisableControlAction(0, 2, true) -- Disable tilt
-			DisableControlAction(0, 24, true) -- Attack
-			DisableControlAction(0, 257, true) -- Attack 2
-			DisableControlAction(0, 25, true) -- Aim
-			DisableControlAction(0, 263, true) -- Melee Attack 1
-			DisableControlAction(0, 32, true) -- W
-			DisableControlAction(0, 34, true) -- A
-			DisableControlAction(0, 31, true) -- S
-			DisableControlAction(0, 30, true) -- D
-
-			DisableControlAction(0, 45, true) -- Reload
-			DisableControlAction(0, 22, true) -- Jump
-			DisableControlAction(0, 44, true) -- Cover
-			DisableControlAction(0, 37, true) -- Select Weapon
-			DisableControlAction(0, 23, true) -- Also 'enter'?
-
-			DisableControlAction(0, 288,  true) -- Disable phone
-			DisableControlAction(0, 289, true) -- Inventory
-			DisableControlAction(0, 170, true) -- Animations
-			DisableControlAction(0, 167, true) -- Job
-
-			DisableControlAction(0, 0, true) -- Disable changing view
-			DisableControlAction(0, 26, true) -- Disable looking behind
-			DisableControlAction(0, 73, true) -- Disable clearing animation
-			DisableControlAction(2, 199, true) -- Disable pause screen
-
-			DisableControlAction(0, 59, true) -- Disable steering in vehicle
-			DisableControlAction(0, 71, true) -- Disable driving forward in vehicle
-			DisableControlAction(0, 72, true) -- Disable reversing in vehicle
-
-			DisableControlAction(2, 36, true) -- Disable going stealth
-
-			DisableControlAction(0, 47, true)  -- Disable weapon
-			DisableControlAction(0, 264, true) -- Disable melee
-			DisableControlAction(0, 257, true) -- Disable melee
-			DisableControlAction(0, 140, true) -- Disable melee
-			DisableControlAction(0, 141, true) -- Disable melee
-			DisableControlAction(0, 142, true) -- Disable melee
-			DisableControlAction(0, 143, true) -- Disable melee
-			DisableControlAction(0, 75, true)  -- Disable exit vehicle
-			DisableControlAction(27, 75, true) -- Disable exit vehicle
-]]
