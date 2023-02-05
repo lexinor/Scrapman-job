@@ -1,3 +1,8 @@
+if Config.OldEsx == true then
+   ESX = nil
+   TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+end
+
 RegisterServerEvent('scrapjob:scrap:find')
 AddEventHandler('scrapjob:scrap:find', function()
    local _source = source

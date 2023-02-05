@@ -1,4 +1,16 @@
+if Config.OldEsx == true then
+   ESX = nil
+
+   Citizen.CreateThread(function()
+	 while ESX == nil do
+		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+		Citizen.Wait(0)
+	 end
+   end)
+end
+
 local InJob = false
+local WhileSearcing = false
 local scrap_type = nil
 
 ------------------------
@@ -31,11 +43,12 @@ Citizen.CreateThread(function()
 
               if dist <= 1.2 and not NearMarker then
                  DrawMarker(1, Scrappos[k].x, Scrappos[k].y, Scrappos[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 0, 173, 255, 47 ,0 ,0 ,0 ,0)
-                 scrapmantext(Scrappos[k].x, Scrappos[k].y, Scrappos[k].z, tostring('Press ~b~[E]~w~ to search this spot'))
+                 scrapmantext(Scrappos[k].x, Scrappos[k].y, Scrappos[k].z+ 0.9, tostring('Press ~b~[E]~w~ to search this spot'))
                  NearMarker = true
                  if IsControlJustPressed(0,38) then
                     scrap()
                     InJob = true
+		    WhileSearcing = true
                  end
               end
            end
@@ -47,7 +60,7 @@ Citizen.CreateThread(function()
 	          local coord2 = vector3(Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z)
 	          local dist = #(coord1 - coord2)
               if dist <= 1.2 and not NearMarker then
-                 scrapmantext(Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z, tostring('Press ~g~[E]~w~ to sell scraps'))
+                 scrapmantext(Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z+ 0.9, tostring('Press ~g~[E]~w~ to sell scraps'))
                  DrawMarker(1, Scrapsell[k].x, Scrapsell[k].y, Scrapsell[k].z, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.2001, 50, 205, 50, 80 ,0 ,0 ,0 ,0)
                  NearMarker = true
                  if IsControlJustPressed(0,38) then
@@ -69,9 +82,8 @@ end)
 
 
 Citizen.CreateThread(function()
-     while true do
-     local ped = PlayerPedId()
-       if IsEntityPlayingAnim(ped, "anim@gangops@facility@servers@bodysearch@", "player_search", 3) then
+    while true do
+       if WhileSearcing == true then
           DisableControlAction(0, 24, true)
           DisableControlAction(0, 257, true)
           DisableControlAction(0, 263, true)
@@ -137,6 +149,7 @@ function scrap()
                impacts = 0
                TriggerServerEvent('scrapjob:scrap:find')
                exports.pNotify:SendNotification({text = "you found some scrap type, go ahead to sell this scrap to the dealer nearby", type = "success", timeout = 8000, layout = "centerRight", queue = "right"})
+	       WhileSearcing = false
                break
             end
         end
@@ -173,7 +186,7 @@ function LoadDict(dict)
 end
 
 function scrapmantext(x, y, z, text)
-    local onScreen, _x, _y = World3dToScreen2d(x, y, z+ 0.9)
+    local onScreen, _x, _y = World3dToScreen2d(x, y, z)
     local p = GetGameplayCamCoords()
     local distance = GetDistanceBetweenCoords(p.x, p.y, p.z, x, y, z, 1)
     local scale = (1 / distance) * 2
